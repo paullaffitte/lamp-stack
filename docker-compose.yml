@@ -15,7 +15,35 @@ services:
       - php
 
   php:
-    image: php:7.1-fpm
+    build: 
+      context: "./"
+      dockerfile: "Dockerfile-php"
+    image: phpcustom
     restart: always
     volumes:
       - "./www:/var/www"
+    depends_on:
+      - mariadb
+    links:
+      - "mariadb:mysql"
+
+  mariadb:
+    image: mariadb:10.3
+    restart: always
+    volumes:
+      - "./db:/var/lib/mysql"
+    environment:
+      - "MYSQL_ROOT_PASSWORD=dev"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:4.7
+    restart: always
+    ports:
+      - "8083:80"
+    environment:
+      - "PMA_HOST=mysql"
+      - "MYSQL_ROOT_PASSWORD=dev"
+    depends_on:
+      - php
+    links:
+      - "mariadb:mysql"
